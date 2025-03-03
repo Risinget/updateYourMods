@@ -1,0 +1,14 @@
+{
+    "versionMc": "1.21.4",
+    "loader": "Fabric",
+    "mods": [
+        {
+            "id": 263420,
+            "name": "XaerosMinimap",
+            "download": true,
+            "pageUrl": "https://www.curseforge.com/minecraft/mc-mods/xaeros-minimap",
+            "curseforge": true,
+            "mondrith": false
+        }
+    ]
+}

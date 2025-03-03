@@ -2,7 +2,18 @@ const axios = require("axios");
 require("dotenv/config");
 const fs = require("fs");
 const path = require("path");
+const { mods, versionMc, loader} = require("./mods.json");
 let api_key = process.env.CURSEFORGE_API_KEY;
+
+const getFilesModrinth = async (mod) => {
+  try {
+    const response = await axios.get(`https://api.modrinth.com/v2/project/${mod}/version`);
+    return response.data;
+  } catch (error) {
+    return { error: error.message };
+  }
+
+}
 
 const getFiles = async (mod) => {
   try {
@@ -22,62 +33,17 @@ const getFiles = async (mod) => {
 };
 
 const main = async () => {
-  const mods = [
-    {
-      id: 263420,
-      name: "XaerosMinimap",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/xaeros-minimap",
-    },
-    {
-      id: 306612,
-      name: "FabricApi",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/fabric-api",
-    },
-    {
-      id: 455508,
-      name: "IrisShaders",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/irisshaders",
-    },
-    {
-      id: 394468,
-      name: "Sodium",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/sodium",
-    },
-    {
-      id: 391298,
-      name: "ViaFabric",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/viafabric",
-    },
-    {
-      id: 317780,
-      name: "XaerosWorldMap",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/xaeros-world-map",
-    },
-    {
-      id: 667299,
-      name: "YetAnotherConfigLib",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/yacl",
-    },
-    {
-      id: 1066980,
-      name: "Commander",
-      download: true,
-      pageUrl: "https://www.curseforge.com/minecraft/mc-mods/commander-suite",
-    },
-  ];
-
-  versionMc = "1.21.4";
-  loader = "Fabric";
 
   for(let mod of mods)
   {
+    if(mod.mondrith == true){
+
+    }
+
+    if (mod.curseforge == true) {
+
+    }
+
     let files = await getFiles(mod.id);
 
     if (files.error) {
@@ -102,7 +68,6 @@ const main = async () => {
       continue;
     }
 
-
     console.log(`Downloading ${mod.name} from ${versions[0]}`);
 
     const filename = path.basename(versions[0]);
@@ -118,10 +83,6 @@ const main = async () => {
     
     fs.writeFileSync(savePath, response.data);
     console.log(`File saved as ${filename}`);
-
   }
-    
-
 };
-
 main();
