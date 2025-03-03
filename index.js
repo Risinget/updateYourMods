@@ -12,13 +12,11 @@ const getFilesModrinth = async (mod) => {
   } catch (error) {
     return { error: error.message };
   }
-
 }
 
-const getFiles = async (mod) => {
+const getFilesCurseforge = async (mod) => {
   try {
-    const response = await axios.get(
-      `https://api.curseforge.com/v1/mods/${mod}/files`,
+    const response = await axios.get(`https://api.curseforge.com/v1/mods/${mod}/files`,
       {
         headers: {
           Accept: "application/json",
@@ -32,19 +30,44 @@ const getFiles = async (mod) => {
   }
 };
 
+async function downloadUrl(mod, versions, versionMc) {
+      folderName = `mods/${versionMc}`;
+
+      console.log(versions);
+      
+      if (versions[0]) {
+        console.log(versions[0]);
+      } else {
+        console.log(`No version found ${versionMc} for: ${mod.name} URL: ${mod.pageUrl}`);
+        const logMessage = `No version ${versionMc} found for: ${mod.name} URL: ${mod.pageUrl || "Unknown URL"}\n`;
+        fs.appendFileSync("error_log.txt", logMessage);
+
+        return;
+      }
+
+      console.log(`Downloading ${mod.name} from ${versions[0]}`);
+
+      const filename = path.basename(versions[0]);
+      const savePath = path.join(folderName, filename);
+
+      const response = await axios.get(versions[0], {
+        responseType: "arraybuffer",
+      });
+      // Guardar el archivo con el nombre obtenido
+      if (!fs.existsSync(folderName)) {
+        fs.mkdirSync(folderName, { recursive: true });
+      }
+
+      fs.writeFileSync(savePath, response.data);
+      console.log(`File saved as ${filename}`);
+}
+
 const main = async () => {
 
-  for(let mod of mods)
-  {
-    if(mod.mondrith == true){
-
-    }
-
-    if (mod.curseforge == true) {
-
-    }
-
-    let files = await getFiles(mod.id);
+  const curseforgeMods = mods.curseforge;
+  const modrinthMods = mods.modrinth;
+  for (let mod of curseforgeMods) {
+    let files = await getFilesCurseforge(mod.id);
 
     if (files.error) {
       console.log(`Error: ${files.error} for ${mod.name}`);
@@ -53,36 +76,33 @@ const main = async () => {
 
     let versions = [];
     for (let index in files.data) {
-      let file = files.data[index]
-      if (file.gameVersions.includes(versionMc) && file.gameVersions.includes(loader)) {
-          versions.push(file.downloadUrl);
+      let file = files.data[index];
+      if (
+        file.gameVersions.includes(versionMc) &&
+        file.gameVersions.includes(loader)
+      ) {
+        versions.push(file.downloadUrl);
       }
     }
-    folderName = `mods/${versionMc}`;
+    await downloadUrl(mod, versions, versionMc);
+  }
 
-    if(versions[0]){
-      console.log(versions[0]);
-    }else{
-      console.log(`No version found for: ${mod.name} URL: ${mod.pageUrl}`);
-      fs.appendFileSync(`No version ${versionMc} found for: ${mod.name} URL: ${mod.pageUrl}`+"\n");
-      continue;
+  for(let mod of modrinthMods){
+    const files = await getFilesModrinth(mod.id);
+    if (files.error) {
+      console.log(`Error: ${files.error} for ${mod.name}`);
+      return;
+    }
+    let versions = [];
+    for (let index in files) {
+      let file = files[index];
+      if (file.game_versions.includes(versionMc)) {
+        versions.push(file.files[0].url);
+      }
     }
 
-    console.log(`Downloading ${mod.name} from ${versions[0]}`);
+    await downloadUrl(mod, versions, versionMc);
 
-    const filename = path.basename(versions[0]);
-    const savePath = path.join(folderName, filename);
-    
-    const response = await axios.get(versions[0], {
-        responseType: "arraybuffer",
-    });
-    // Guardar el archivo con el nombre obtenido
-    if (!fs.existsSync(folderName)) {
-      fs.mkdirSync(folderName, { recursive: true });
-    }
-    
-    fs.writeFileSync(savePath, response.data);
-    console.log(`File saved as ${filename}`);
   }
 };
 main();
