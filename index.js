@@ -2,7 +2,7 @@ const axios = require("axios");
 require("dotenv/config");
 const fs = require("fs");
 const path = require("path");
-const { mods, versionMc, loader} = require("./mods.json");
+const { mods, versionMc, loader, byVersion} = require("./mods.json");
 let api_key = process.env.CURSEFORGE_API_KEY;
 
 
@@ -155,8 +155,6 @@ const main = async () => {
 
   // esto asegura la integridad del archivo
   // es decir que funcione correctamente cuando es true para usar el filtrador de version de curseforge
-  let byVersion = true;
-
   if (byVersion) {
     for (let mod of curseforgeMods) {
       const fileByVersion = await getFileByVersion(mod, gameVersionId);

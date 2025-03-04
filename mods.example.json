@@ -1,6 +1,7 @@
 {
     "versionMc": "1.21.4",
     "loader": "Fabric",
+    "byVersion": true,
     "mods": {
         "curseforge": [
             {
